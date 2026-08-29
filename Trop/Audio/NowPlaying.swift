@@ -391,10 +391,7 @@ final class NowPlaying {
 
         let urlString = Self.artworkURL(for: videoId)
         guard let url = URL(string: urlString) else {
-            thumbnailUIImage = nil
-            thumbnailImage = Image(systemName: "music.note")
-            thumbnailVersion &+= 1
-            updateDominantColors(from: nil)
+            clearDisplayedArtwork()
             return
         }
 
@@ -412,7 +409,9 @@ final class NowPlaying {
             return
         }
 
-        thumbnailImage = nil
+        // Drop the previous track immediately. Mini player and lock screen
+        // read `thumbnailUIImage`; leaving it set flashes A's art on B.
+        clearDisplayedArtwork()
         thumbnailLoadTask = Task { [generation] in
             do {
                 let platformImage = try await ImagePipeline.shared.image(for: url)
@@ -430,12 +429,20 @@ final class NowPlaying {
                 guard !Task.isCancelled, !(error is CancellationError) else { return }
                 await MainActor.run {
                     guard generation == thumbnailLoadGeneration else { return }
-                    thumbnailImage = Image(systemName: "music.note")
-                    thumbnailVersion &+= 1
-                    updateDominantColors(from: nil)
+                    clearDisplayedArtwork()
                 }
             }
         }
+    }
+
+    /// Placeholder until the current video's fetch or cache hit lands. Also
+    /// strips lock-screen artwork so MPNowPlayingInfo does not keep the last track.
+    private func clearDisplayedArtwork() {
+        thumbnailUIImage = nil
+        thumbnailImage = Image(systemName: "music.note")
+        thumbnailVersion &+= 1
+        updateDominantColors(from: nil)
+        PlayerController.shared.updateNowPlayingArtwork()
     }
 
     private func preloadNextTrack() {

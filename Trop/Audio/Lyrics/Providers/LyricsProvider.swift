@@ -55,16 +55,17 @@ enum LyricsParsing {
     /// Split a raw LRC string into lines. Blank timestamped lines are kept —
     /// they mark instrumental spans (like Metrolist's isBlank entries).
     ///
-    /// A line may carry several leading tags (`[00:12.00][00:45.00]chorus`).
-    /// Each tag is its own timed line; using only the last tag dropped
-    /// earlier chorus hits and broke letter-sync.
+    /// A line may carry several tags, packed (`[00:12.00][00:45.00]chorus`)
+    /// or space-separated (`[00:12.00] [00:45.00]chorus`). Each tag is its
+    /// own timed line. A cursor that required tags to be adjacent dropped
+    /// every tag after the first space.
     static func parseLrc(_ raw: String) -> [LyricLine] {
         raw.split(whereSeparator: \.isNewline)
             .flatMap { parseLrcTaggedLine(String($0)) }
             .sorted { ($0.startTime ?? 0) < ($1.startTime ?? 0) }
     }
 
-    /// Expands leading `[mm:ss]` / `[mm:ss.xx]` tags on one LRC line.
+    /// Expands every `[mm:ss]` / `[mm:ss.xx]` tag on one LRC line.
     static func parseLrcTaggedLine(_ line: String) -> [LyricLine] {
         let tagPattern = #"\[(\d{1,2}):(\d{1,2})(?:\.(\d{1,3}))?\]"#
         guard let tagRegex = try? NSRegularExpression(pattern: tagPattern) else { return [] }
@@ -72,15 +73,12 @@ enum LyricsParsing {
         let matches = tagRegex.matches(in: line, range: NSRange(line.startIndex..., in: line))
         guard !matches.isEmpty else { return [] }
 
-        var times: [TimeInterval] = []
-        var cursor = 0
-        for match in matches {
-            guard match.range.location == cursor else { break }
-            times.append(lrcTime(from: match, in: nsLine))
-            cursor = match.range.location + match.range.length
+        let times = matches.map { lrcTime(from: $0, in: nsLine) }
+        var stripped = nsLine
+        for match in matches.reversed() {
+            stripped = stripped.replacingCharacters(in: match.range, with: "") as NSString
         }
-        guard !times.isEmpty else { return [] }
-        let text = nsLine.substring(from: cursor).trimmingCharacters(in: .whitespaces)
+        let text = (stripped as String).trimmingCharacters(in: .whitespacesAndNewlines)
         return times.map { LyricLine(text: text, startTime: $0) }
     }
 

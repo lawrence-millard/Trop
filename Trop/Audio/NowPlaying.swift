@@ -375,10 +375,20 @@ final class NowPlaying {
     }
 
     private var lastLoadedVideoId: String?
+    /// Bumped on every *new* thumbnail request. Completions compare this, not
+    /// `lastLoadedVideoId`: A→B→A sets lastLoaded back to A, which would let
+    /// the first A fetch apply after a newer A load (or cache hit) had won.
+    private var thumbnailLoadGeneration = 0
+    private var thumbnailLoadTask: Task<Void, Never>?
 
     private func loadThumbnail(videoId: String) {
         guard videoId != lastLoadedVideoId else { return }
         lastLoadedVideoId = videoId
+
+        thumbnailLoadTask?.cancel()
+        thumbnailLoadGeneration += 1
+        let generation = thumbnailLoadGeneration
+
         let urlString = Self.artworkURL(for: videoId)
         guard let url = URL(string: urlString) else {
             thumbnailUIImage = nil
@@ -390,6 +400,8 @@ final class NowPlaying {
 
         // Fast path: if the artwork was pre-warmed, swap it in synchronously so
         // swiping to the next/previous song shows the image with no placeholder.
+        // Generation already advanced, so any in-flight fetch for this same
+        // videoId (A→B→A) cannot overwrite the cached image on completion.
         if let cached = ImagePipeline.shared.cache.cachedImage(for: ImageRequest(url: url), caches: .all)?.image {
             let cropped = cached.centerCroppedSquare()
             thumbnailUIImage = cropped
@@ -401,14 +413,13 @@ final class NowPlaying {
         }
 
         thumbnailImage = nil
-        let requestedId = videoId
-        Task {
+        thumbnailLoadTask = Task { [generation] in
             do {
                 let platformImage = try await ImagePipeline.shared.image(for: url)
+                guard !Task.isCancelled else { return }
                 let cropped = platformImage.centerCroppedSquare()
                 await MainActor.run {
-                    // Skip-spam: an older fetch must not overwrite newer art.
-                    guard lastLoadedVideoId == requestedId else { return }
+                    guard generation == thumbnailLoadGeneration else { return }
                     thumbnailUIImage = cropped
                     thumbnailImage = Image(uiImage: cropped)
                     thumbnailVersion &+= 1
@@ -416,8 +427,9 @@ final class NowPlaying {
                     PlayerController.shared.updateNowPlayingArtwork()
                 }
             } catch {
+                guard !Task.isCancelled, !(error is CancellationError) else { return }
                 await MainActor.run {
-                    guard lastLoadedVideoId == requestedId else { return }
+                    guard generation == thumbnailLoadGeneration else { return }
                     thumbnailImage = Image(systemName: "music.note")
                     thumbnailVersion &+= 1
                     updateDominantColors(from: nil)

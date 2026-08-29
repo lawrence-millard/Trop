@@ -70,9 +70,17 @@ class DownloadManager: ObservableObject {
         }
 
         do {
-            let fileURL = downloadsDir.appendingPathComponent(
-                sanitizedFileName("\(artist) - \(song.title).m4a")
-            )
+            // Key the file by videoId. Title/artist live in metadata and the
+            // DB row. Two different IDs with the same display name used to
+            // share one path, so the second download overwrote the first
+            // file while both rows still pointed at it.
+            if let existing = try? await DatabaseService.shared.fetchOne(
+                DownloadedTrackEntity.self,
+                key: videoId
+            ) {
+                try? fileManager.removeItem(atPath: existing.localPath)
+            }
+            let fileURL = downloadsDir.appendingPathComponent("\(videoId).m4a")
             if fileManager.fileExists(atPath: fileURL.path) {
                 try? fileManager.removeItem(at: fileURL)
             }
@@ -386,11 +394,6 @@ class DownloadManager: ObservableObject {
         }
     }
 
-    private func sanitizedFileName(_ s: String) -> String {
-        let invalid = CharacterSet(charactersIn: ":/\\?%*|\"<>")
-        return s.components(separatedBy: invalid).joined(separator: " ")
-            .trimmingCharacters(in: .whitespaces)
-    }
 }
 
 enum DownloadError: Error, LocalizedError {

@@ -1,0 +1,32 @@
+{
+  "contents": {
+    "singleColumnBrowseResultsRenderer": {
+      "tabs": [
+        {
+          "tabRenderer": {
+            "content": {
+              "sectionListRenderer": {
+                "contents": [
+                  {
+                    "musicShelfRenderer": {
+                      "contents": [
+                        { "marker": "artist-01", "musicResponsiveListItemRenderer": { "videoId": "artist-channel" } },
+                        {
+                          "continuationItemRenderer": {
+                            "continuationEndpoint": {
+                              "continuationCommand": { "token": "shelf-tok-2" }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

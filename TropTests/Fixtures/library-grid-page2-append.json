@@ -1,0 +1,18 @@
+{
+  "onResponseReceivedActions": [
+    {
+      "appendContinuationItemsAction": {
+        "continuationItems": [
+          { "marker": "grid-03", "musicTwoRowItemRenderer": { "title": { "runs": [{ "text": "Three" }] } } },
+          {
+            "continuationItemRenderer": {
+              "continuationEndpoint": {
+                "continuationCommand": { "token": "grid-tok-3" }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

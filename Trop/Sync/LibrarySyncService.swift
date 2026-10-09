@@ -232,16 +232,45 @@ extension LibrarySyncService {
 // MARK: Pagination
 
 extension LibrarySyncService {
+    /// Library shelves and grids page the same way playlists do. `maxPages`
+    /// matches SwiftyTube `paginate`'s default cap. Follow-up requests send
+    /// only the continuation body field; browseId is omitted so WEB_REMIX
+    /// does not return the first page again.
     private func fetchAllPages<T>(
         browseId: String,
         params: String? = nil,
+        maxPages: Int = 50,
         parse: @escaping ([String: Any]) -> [T]
     ) async throws -> [T] {
-        try await innerTube.paginate(
-            browseId: browseId,
-            params: params,
-            parse: parse,
-            continuation: LibraryBrowseParser.extractContinuationToken(from:)
-        )
+        var allItems: [T] = []
+        var token: String?
+        var seenTokens = Set<String>()
+        var pages = 0
+        repeat {
+            let json: [String: Any]
+            if let token {
+                json = try await innerTube.browse(continuation: token)
+            } else {
+                json = try await innerTube.browse(browseId: browseId, params: params)
+            }
+            allItems.append(contentsOf: parse(json))
+            token = LibraryBrowseParser.extractContinuationToken(from: json)
+            pages += 1
+            if let reason = ContinuationItems.stopReason(
+                token: token,
+                seenTokens: &seenTokens,
+                pages: pages,
+                maxPages: maxPages
+            ) {
+                switch reason {
+                case .repeatedToken:
+                    Log.sync.error("fetchAllPages \(browseId): repeated continuation token, stopping")
+                case .pageCap:
+                    Log.sync.error("fetchAllPages \(browseId): hit \(maxPages)-page cap, stopping")
+                }
+                break
+            }
+        } while token != nil
+        return allItems
     }
 }

@@ -1,0 +1,12 @@
+{
+  "continuationContents": {
+    "gridContinuation": {
+      "items": [
+        { "marker": "legacy-grid-02", "musicTwoRowItemRenderer": { "title": { "runs": [{ "text": "Old" }] } } }
+      ],
+      "continuations": [
+        { "nextContinuationData": { "continuation": "legacy-grid-tok-2" } }
+      ]
+    }
+  }
+}

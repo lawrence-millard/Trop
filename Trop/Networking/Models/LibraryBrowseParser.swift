@@ -11,6 +11,11 @@ enum LibraryBrowseParser {
     // Navigates through the nested JSON to find the musicResponsiveListItemRenderer items.
     // Handles both first-page (sectionListRenderer) and continuation structures.
     static func extractItems(from json: [String: Any]) -> [[String: Any]]? {
+        guard let items = extractRawItems(from: json) else { return nil }
+        return ContinuationItems.songRows(items)
+    }
+
+    private static func extractRawItems(from json: [String: Any]) -> [[String: Any]]? {
         // Helper: try to get items from a content section, unwrapping itemSectionRenderer
         // Helper: extract items from any renderer dict
         func extractItemsFromRenderer(_ rendererVal: Any) -> [[String: Any]]? {
@@ -86,6 +91,9 @@ enum LibraryBrowseParser {
                 return items
             }
         }
+        if let appended = ContinuationItems.appendedItems(from: json) {
+            return appended
+        }
         return nil
     }
 
@@ -111,7 +119,7 @@ enum LibraryBrowseParser {
         if let sections = BrowseLens.browseSections(json) {
             for section in sections {
                 let unwrapped = unwrapSection(section)
-                if let token = InnerTubeDecode.continuationToken(in: unwrapped) { return token }
+                if let token = ContinuationItems.token(in: unwrapped) { return token }
             }
         }
 
@@ -123,7 +131,7 @@ enum LibraryBrowseParser {
            let sections = sectionList["contents"] as? [[String: Any]] {
             for section in sections {
                 let unwrapped = unwrapSection(section)
-                if let token = InnerTubeDecode.continuationToken(in: unwrapped) { return token }
+                if let token = ContinuationItems.token(in: unwrapped) { return token }
             }
         }
 
@@ -131,21 +139,21 @@ enum LibraryBrowseParser {
         if let contentsArray = json["contents"] as? [[String: Any]] {
             for section in contentsArray {
                 let unwrapped = unwrapSection(section)
-                if let token = InnerTubeDecode.continuationToken(in: unwrapped) { return token }
+                if let token = ContinuationItems.token(in: unwrapped) { return token }
             }
         }
 
         // Try continuationContents paths
         if let continuationContents = json["continuationContents"] as? [String: Any] {
             if let shelfCont = continuationContents["musicShelfContinuation"] as? [String: Any],
-               let token = InnerTubeDecode.continuationToken(in: shelfCont) { return token }
+               let token = ContinuationItems.token(in: shelfCont) { return token }
             if let gridCont = continuationContents["gridContinuation"] as? [String: Any],
-               let token = InnerTubeDecode.continuationToken(in: gridCont) { return token }
+               let token = ContinuationItems.token(in: gridCont) { return token }
             if let playlistCont = continuationContents["musicPlaylistShelfContinuation"] as? [String: Any],
-               let token = InnerTubeDecode.continuationToken(in: playlistCont) { return token }
+               let token = ContinuationItems.token(in: playlistCont) { return token }
         }
 
-        return nil
+        return ContinuationItems.appendedToken(from: json)
     }
 }
 

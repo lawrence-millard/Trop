@@ -1,0 +1,39 @@
+{
+  "contents": {
+    "singleColumnBrowseResultsRenderer": {
+      "tabs": [
+        {
+          "tabRenderer": {
+            "content": {
+              "sectionListRenderer": {
+                "contents": [
+                  {
+                    "itemSectionRenderer": {
+                      "contents": [
+                        {
+                          "gridRenderer": {
+                            "items": [
+                              { "marker": "grid-01", "musicTwoRowItemRenderer": { "title": { "runs": [{ "text": "One" }] } } },
+                              { "marker": "grid-02", "musicTwoRowItemRenderer": { "title": { "runs": [{ "text": "Two" }] } } },
+                              {
+                                "continuationItemRenderer": {
+                                  "continuationEndpoint": {
+                                    "continuationCommand": { "token": "grid-tok-2" }
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

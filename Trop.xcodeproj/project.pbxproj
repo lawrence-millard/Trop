@@ -61,6 +61,7 @@
 		144200073040C1BE0032F8CD /* fk_libswscale.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = fk_libswscale.xcframework; path = "build/ffmpeg-kit-xcframeworks/fk_libswscale.xcframework"; sourceTree = SOURCE_ROOT; };
 		144200083040C1BE0032F8CD /* ffmpegkit.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = ffmpegkit.xcframework; path = "build/ffmpeg-kit-xcframeworks/ffmpegkit.xcframework"; sourceTree = SOURCE_ROOT; };
 		14B5762F2FF190EF006B3990 /* Trop.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Trop.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A65FE0012FF30001006B3990 /* TropTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TropTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -80,6 +81,11 @@
 				14B578EA2FF30001006B3990 /* Exceptions for "Trop" folder in "Trop" target */,
 			);
 			path = Trop;
+			sourceTree = "<group>";
+		};
+		A65FE0022FF30001006B3990 /* TropTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = TropTests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -105,6 +111,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A65FE0042FF30001006B3990 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -127,6 +140,7 @@
 			isa = PBXGroup;
 			children = (
 				14B576312FF190EF006B3990 /* Trop */,
+				A65FE0022FF30001006B3990 /* TropTests */,
 				144200003040C1BE0032F8CD /* Frameworks */,
 				14B576302FF190EF006B3990 /* Products */,
 			);
@@ -136,6 +150,7 @@
 			isa = PBXGroup;
 			children = (
 				14B5762F2FF190EF006B3990 /* Trop.app */,
+				A65FE0012FF30001006B3990 /* TropTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -173,6 +188,27 @@
 			productReference = 14B5762F2FF190EF006B3990 /* Trop.app */;
 			productType = "com.apple.product-type.application";
 		};
+		A65FE0062FF30001006B3990 /* TropTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A65FE00B2FF30001006B3990 /* Build configuration list for PBXNativeTarget "TropTests" */;
+			buildPhases = (
+				A65FE0032FF30001006B3990 /* Sources */,
+				A65FE0042FF30001006B3990 /* Frameworks */,
+				A65FE0052FF30001006B3990 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A65FE0082FF30001006B3990 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				A65FE0022FF30001006B3990 /* TropTests */,
+			);
+			name = TropTests;
+			productName = TropTests;
+			productReference = A65FE0012FF30001006B3990 /* TropTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -185,6 +221,10 @@
 				TargetAttributes = {
 					14B5762E2FF190EF006B3990 = {
 						CreatedOnToolsVersion = 26.3;
+					};
+					A65FE0062FF30001006B3990 = {
+						CreatedOnToolsVersion = 26.3;
+						TestTargetID = 14B5762E2FF190EF006B3990;
 					};
 				};
 			};
@@ -210,12 +250,20 @@
 			projectRoot = "";
 			targets = (
 				14B5762E2FF190EF006B3990 /* Trop */,
+				A65FE0062FF30001006B3990 /* TropTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		14B5762D2FF190EF006B3990 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A65FE0052FF30001006B3990 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -274,7 +322,32 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A65FE0032FF30001006B3990 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXContainerItemProxy section */
+		A65FE0072FF30001006B3990 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 14B576272FF190EF006B3990 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 14B5762E2FF190EF006B3990;
+			remoteInfo = Trop;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXTargetDependency section */
+		A65FE0082FF30001006B3990 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 14B5762E2FF190EF006B3990 /* Trop */;
+			targetProxy = A65FE0072FF30001006B3990 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		14B576382FF190F0006B3990 /* Debug */ = {
@@ -456,6 +529,50 @@
 			};
 			name = Release;
 		};
+		A65FE0092FF30001006B3990 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 0.0.2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.686udjie.TropTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Trop.app/Trop";
+			};
+			name = Debug;
+		};
+		A65FE00A2FF30001006B3990 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 0.0.2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.686udjie.TropTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Trop.app/Trop";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -473,6 +590,15 @@
 			buildConfigurations = (
 				14B5763B2FF190F0006B3990 /* Debug */,
 				14B5763C2FF190F0006B3990 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A65FE00B2FF30001006B3990 /* Build configuration list for PBXNativeTarget "TropTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A65FE0092FF30001006B3990 /* Debug */,
+				A65FE00A2FF30001006B3990 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

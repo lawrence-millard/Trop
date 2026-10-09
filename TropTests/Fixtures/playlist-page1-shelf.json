@@ -1,0 +1,31 @@
+{
+  "contents": {
+    "twoColumnBrowseResultsRenderer": {
+      "secondaryContents": {
+        "sectionListRenderer": {
+          "contents": [
+            {
+              "musicPlaylistShelfRenderer": {
+                "contents": [
+                  { "musicResponsiveListItemRenderer": { "videoId": "song-01" } },
+                  { "musicResponsiveListItemRenderer": { "videoId": "song-02" } },
+                  {
+                    "continuationItemRenderer": {
+                      "trigger": "CONTINUATION_TRIGGER_ON_ITEM_SHOWN",
+                      "continuationEndpoint": {
+                        "continuationCommand": {
+                          "token": "tok-2",
+                          "request": "CONTINUATION_REQUEST_TYPE_BROWSE"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "contents": {
+    "twoColumnBrowseResultsRenderer": {
+      "secondaryContents": {
+        "sectionListRenderer": {
+          "contents": [
+            {
+              "musicPlaylistShelfRenderer": {
+                "contents": [
+                  { "musicResponsiveListItemRenderer": { "videoId": "legacy-01" } }
+                ],
+                "continuations": [
+                  { "nextContinuationData": { "continuation": "legacy-tok" } }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

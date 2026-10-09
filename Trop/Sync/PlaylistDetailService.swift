@@ -13,7 +13,7 @@ actor PlaylistDetailService {
     private let innerTube = InnerTubeClient.tropShared
     private let db = DatabaseService.shared
 
-    func fetchPlaylist(playlistId: String, maxPages: Int = 100) async throws -> Int {
+    func fetchPlaylist(playlistId: String, maxPages: Int = PlaylistBrowseParser.defaultMaxPages) async throws -> Int {
         let browseId = "VL\(playlistId)"
         var allItems: [[String: Any]] = []
         var token: String?
@@ -21,19 +21,34 @@ actor PlaylistDetailService {
         var pages = 0
         var hadShelf = false
         repeat {
-            let json = try await innerTube.browse(browseId: browseId, continuation: token)
-            if let items = extractPlaylistItems(from: json) {
+            // Follow-up pages send only the continuation token. WEB_REMIX ignores
+            // the token when browseId is also set and returns page 1 again.
+            // SwiftyTube puts `continuation` in the JSON body (not a ctoken query)
+            // and the music client is WEB_REMIX.
+            let json: [String: Any]
+            if let token {
+                json = try await innerTube.browse(continuation: token)
+            } else {
+                json = try await innerTube.browse(browseId: browseId)
+            }
+            if let items = PlaylistBrowseParser.extractItems(from: json) {
                 hadShelf = true
                 allItems += items
             }
-            token = extractPlaylistContinuation(from: json)
+            token = PlaylistBrowseParser.extractContinuation(from: json)
             pages += 1
-            if let token, !seenTokens.insert(token).inserted {
-                Log.sync.error("fetchPlaylist \(playlistId): repeated continuation token, stopping")
-                break
-            }
-            if pages >= maxPages {
-                Log.sync.error("fetchPlaylist \(playlistId): hit \(maxPages)-page cap, stopping")
+            if let reason = ContinuationItems.stopReason(
+                token: token,
+                seenTokens: &seenTokens,
+                pages: pages,
+                maxPages: maxPages
+            ) {
+                switch reason {
+                case .repeatedToken:
+                    Log.sync.error("fetchPlaylist \(playlistId): repeated continuation token, stopping")
+                case .pageCap:
+                    Log.sync.error("fetchPlaylist \(playlistId): hit \(maxPages)-page cap, stopping")
+                }
                 break
             }
         } while token != nil
@@ -123,80 +138,5 @@ actor PlaylistDetailService {
             return videoId
         }
         return nil
-    }
-
-    private func extractPlaylistItems(from json: [String: Any]) -> [[String: Any]]? {
-        if let firstSection = BrowseLens.firstBrowseSection(json),
-           let shelf = (firstSection["musicPlaylistShelfRenderer"] as? [String: Any])
-            ?? (firstSection["musicShelfRenderer"] as? [String: Any]),
-           let items = shelf["contents"] as? [[String: Any]] {
-            return items
-        }
-        let twoColumnItems = twoColumnShelves(from: json).compactMap { $0["contents"] as? [[String: Any]] }.flatMap { $0 }
-        if !twoColumnItems.isEmpty {
-            return twoColumnItems
-        }
-        if let continuationContents = json["continuationContents"] as? [String: Any],
-           let shelf = (continuationContents["musicPlaylistShelfContinuation"] as? [String: Any])
-            ?? (continuationContents["musicShelfContinuation"] as? [String: Any]),
-           let items = shelf["contents"] as? [[String: Any]] {
-            return items
-        }
-        Log.sync.debug("extractPlaylistItems: no shelf found, top keys=\(json.keys.sorted())")
-        if let contents = json["contents"] as? [String: Any] {
-            Log.sync.debug("extractPlaylistItems: contents keys=\(contents.keys.sorted())")
-        }
-        return nil
-    }
-
-    private func extractPlaylistContinuation(from json: [String: Any]) -> String? {
-        if let firstSection = BrowseLens.firstBrowseSection(json),
-           let shelf = (firstSection["musicPlaylistShelfRenderer"] as? [String: Any])
-            ?? (firstSection["musicShelfRenderer"] as? [String: Any]),
-           let token = InnerTubeDecode.continuationToken(in: shelf) {
-            return token
-        }
-        for shelf in twoColumnShelves(from: json) {
-            if let token = InnerTubeDecode.continuationToken(in: shelf) {
-                return token
-            }
-        }
-        if let twoCol = (json["contents"] as? [String: Any])?["twoColumnBrowseResultsRenderer"] as? [String: Any],
-           let secondary = twoCol["secondaryContents"] as? [String: Any],
-           let sectionList = secondary["sectionListRenderer"] as? [String: Any],
-           let continuations = sectionList["continuations"] as? [[String: Any]],
-           let first = continuations.first,
-           let next = first["nextContinuationData"] as? [String: Any],
-           let token = next["continuation"] as? String {
-            return token
-        }
-        if let continuationContents = json["continuationContents"] as? [String: Any],
-           let shelf = (continuationContents["musicPlaylistShelfContinuation"] as? [String: Any])
-            ?? (continuationContents["musicShelfContinuation"] as? [String: Any]),
-           let token = InnerTubeDecode.continuationToken(in: shelf) {
-            return token
-        }
-        return nil
-    }
-
-    /// Every song shelf from a twoColumnBrowseResultsRenderer response
-    /// (secondaryContents → sectionListRenderer), unwrapping
-    /// itemSectionRenderer wrappers like the detail parser does.
-    private func twoColumnShelves(from json: [String: Any]) -> [[String: Any]] {
-        guard let twoCol = (json["contents"] as? [String: Any])?["twoColumnBrowseResultsRenderer"] as? [String: Any],
-              let secondary = twoCol["secondaryContents"] as? [String: Any],
-              let sectionList = secondary["sectionListRenderer"] as? [String: Any],
-              let sections = sectionList["contents"] as? [[String: Any]] else { return [] }
-        var shelves: [[String: Any]] = []
-        for section in sections {
-            let unwrapped = (section["itemSectionRenderer"] as? [String: Any])
-                .flatMap { ($0["contents"] as? [[String: Any]])?.first }
-                ?? section
-            if let shelf = (unwrapped["musicPlaylistShelfRenderer"] as? [String: Any])
-                ?? (unwrapped["musicShelfRenderer"] as? [String: Any]) {
-                shelves.append(shelf)
-            }
-        }
-        return shelves
     }
 }

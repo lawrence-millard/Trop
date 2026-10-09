@@ -1,0 +1,28 @@
+{
+  "contents": {
+    "singleColumnBrowseResultsRenderer": {
+      "tabs": [
+        {
+          "tabRenderer": {
+            "content": {
+              "sectionListRenderer": {
+                "contents": [
+                  {
+                    "musicPlaylistShelfRenderer": {
+                      "contents": [
+                        { "musicResponsiveListItemRenderer": { "videoId": "tab-01" } }
+                      ],
+                      "continuations": [
+                        { "nextContinuationData": { "continuation": "tab-tok" } }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

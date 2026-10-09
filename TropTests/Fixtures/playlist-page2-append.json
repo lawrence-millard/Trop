@@ -1,0 +1,22 @@
+{
+  "onResponseReceivedActions": [
+    {
+      "appendContinuationItemsAction": {
+        "continuationItems": [
+          { "musicResponsiveListItemRenderer": { "videoId": "song-03" } },
+          { "musicResponsiveListItemRenderer": { "videoId": "song-04" } },
+          {
+            "continuationItemRenderer": {
+              "continuationEndpoint": {
+                "continuationCommand": {
+                  "token": "tok-3",
+                  "request": "CONTINUATION_REQUEST_TYPE_BROWSE"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

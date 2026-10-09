@@ -54,7 +54,15 @@ final class PlaylistDetailViewModel {
         do {
             let browseId = playlistId.hasPrefix("VL") ? playlistId : "VL\(playlistId)"
             let json = try await innerTube.browse(browseId: browseId)
-            let parsed = Self.parsePlaylistDetail(from: json, playlistId: playlistId)
+            var parsed = Self.parsePlaylistDetail(from: json, playlistId: playlistId)
+            parsed.songs += try await fetchContinuationSongs(after: json)
+            if parsed.songs.count > parsed.songCount {
+                parsed.songCount = parsed.songs.count
+            }
+            let totalDuration = parsed.songs.reduce(0) { $0 + $1.duration }
+            if totalDuration > 0 {
+                parsed.duration = totalDuration
+            }
             let hasAvatar = parsed.authorAvatarUrl != nil
             Log.playlistDetail.debug(
                 "title=\(parsed.title) author=\(parsed.authorName ?? "nil") avatar=\(hasAvatar) " +
@@ -106,6 +114,47 @@ final class PlaylistDetailViewModel {
         } catch {
             self.error = error
             isLoading = false
+        }
+    }
+
+    /// Pages after the first. Page 1 is parsed for the header; later pages are
+    /// `appendContinuationItemsAction` (or legacy `continuationContents`) rows.
+    private func fetchContinuationSongs(after firstPage: [String: Any]) async throws -> [SongItem] {
+        var songs: [SongItem] = []
+        var token = PlaylistBrowseParser.extractContinuation(from: firstPage)
+        var seenTokens = Set<String>()
+        var pages = 1
+        while let next = token {
+            if let reason = ContinuationItems.stopReason(
+                token: next,
+                seenTokens: &seenTokens,
+                pages: pages,
+                maxPages: PlaylistBrowseParser.defaultMaxPages
+            ) {
+                switch reason {
+                case .repeatedToken:
+                    Log.playlistDetail.error("load \(playlistId): repeated continuation token, stopping")
+                case .pageCap:
+                    Log.playlistDetail.error(
+                        "load \(playlistId): hit \(PlaylistBrowseParser.defaultMaxPages)-page cap, stopping"
+                    )
+                }
+                break
+            }
+            let json = try await innerTube.browse(continuation: next)
+            if let items = PlaylistBrowseParser.extractItems(from: json) {
+                songs += Self.songs(from: items)
+            }
+            token = PlaylistBrowseParser.extractContinuation(from: json)
+            pages += 1
+        }
+        return songs
+    }
+
+    private static func songs(from rows: [[String: Any]]) -> [SongItem] {
+        rows.compactMap { row in
+            guard let renderer = row["musicResponsiveListItemRenderer"] as? [String: Any] else { return nil }
+            return SongItem.from(renderer)
         }
     }
 

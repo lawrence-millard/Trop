@@ -1,0 +1,12 @@
+{
+  "continuationContents": {
+    "musicPlaylistShelfContinuation": {
+      "contents": [
+        { "musicResponsiveListItemRenderer": { "videoId": "legacy-02" } }
+      ],
+      "continuations": [
+        { "nextContinuationData": { "continuation": "legacy-tok-2" } }
+      ]
+    }
+  }
+}
